@@ -78,7 +78,7 @@ export default function Mapa() {
   }, [])
 
   const fetchLocations = async () => {
-    const res = await fetch('http://localhost:3000/api/locations')
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/locations`)
     const data = await res.json()
     setLocations(data)
   }
@@ -95,14 +95,14 @@ export default function Mapa() {
     e.preventDefault()
 
     if (editingId) {
-      await fetch(`http://localhost:3000/api/locations/${editingId}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/locations/${editingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
       setEditingId(null)
     } else {
-      await fetch('http://localhost:3000/api/locations', {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/locations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -115,7 +115,7 @@ export default function Mapa() {
 
   const handleDelete = async (id?: string) => {
     if (!id) return
-    await fetch(`http://localhost:3000/api/locations/${id}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/locations/${id}`, {
       method: 'DELETE',
     })
     fetchLocations()
