@@ -1,5 +1,3 @@
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
-
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,9 +8,11 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler, // 👈 IMPORTANTE: Añadido aquí
 } from 'chart.js'
 import { Line, Bar } from 'react-chartjs-2'
 
+// 👇 AÑADE 'Filler' al registro
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -21,7 +21,8 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler // 👈 AÑADIDO AQUÍ TAMBIÉN
 )
 
 export default function Grafics() {
@@ -33,10 +34,10 @@ export default function Grafics() {
       {
         label: 'Vendes mensuals',
         data: [10, 20, 15, 30, 25, 35],
-        borderColor: 'rgb(37, 99, 235)', // blue-600
+        borderColor: 'rgb(37, 99, 235)',
         backgroundColor: 'rgba(37, 99, 235, 0.3)',
         tension: 0.4,
-        fill: true,
+        fill: true, // 👉 Esto usa el plugin Filler
       },
     ],
   }
@@ -47,7 +48,7 @@ export default function Grafics() {
       {
         label: 'Ingressos mensuals (€)',
         data: [500, 800, 600, 1200, 900, 1100],
-        backgroundColor: 'rgb(34, 197, 94)', // green-500
+        backgroundColor: 'rgb(34, 197, 94)',
       },
     ],
   }
@@ -66,4 +67,3 @@ export default function Grafics() {
     </div>
   )
 }
-
