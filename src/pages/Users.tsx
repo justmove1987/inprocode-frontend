@@ -6,7 +6,7 @@ type User = {
   last: string
   email: string
   phone: string
-  location: string
+  location: string // input text com "41.3851,2.1734"
   hobby: string
 }
 
@@ -45,10 +45,24 @@ export default function Users() {
     const method = editingId ? 'PUT' : 'POST'
     const url = editingId ? `${API}/${editingId}` : API
 
+    // Convertir la ubicació en format { lat, lng } si és possible
+    const locationParts = form.location.split(',').map((val) => parseFloat(val.trim()))
+    const hasValidCoords = locationParts.length === 2 && locationParts.every((n) => !isNaN(n))
+
+    const userData = {
+      ...form,
+      ...(hasValidCoords && {
+        location: {
+          lat: locationParts[0],
+          lng: locationParts[1],
+        },
+      }),
+    }
+
     await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify(userData),
     })
 
     setForm(defaultUser)
@@ -70,7 +84,7 @@ export default function Users() {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">CRUD d'Usuaris</h2>
+      <h2 className="text-2xl font-bold mb-4">CRUD d&apos;Usuaris</h2>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 mb-6">
         {['first', 'last', 'email', 'phone', 'location', 'hobby'].map((field) => (
@@ -80,7 +94,11 @@ export default function Users() {
             name={field}
             value={form[field as keyof User]}
             onChange={handleChange}
-            placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+            placeholder={
+              field === 'location'
+                ? 'Ubicació (ex: 41.3851,2.1734)'
+                : field.charAt(0).toUpperCase() + field.slice(1)
+            }
             className="p-2 border rounded"
             required
           />
