@@ -40,47 +40,35 @@ export default function Users() {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
+
+  const payload = {
+    name: `${form.first} ${form.last}`, // 🔁 Combina nom i cognom
+    email: form.email,
+    location: form.location, // ✅ Envia ciutat (string), que després es geocodifica al backend
+  }
+
   const method = editingId ? 'PUT' : 'POST'
   const url = editingId ? `${API}/${editingId}` : API
 
-  // Obtenir coordenades des de Nominatim (OpenStreetMap)
-  let lat = null
-  let lng = null
-  try {
-    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(form.location)}`)
-    const data = await response.json()
-    if (data && data.length > 0) {
-      lat = parseFloat(data[0].lat)
-      lng = parseFloat(data[0].lon)
-    } else {
-      alert('Ubicació no trobada')
-      return
-    }
-  } catch (err) {
-    console.error('Error amb geocodificació:', err)
-    return
-  }
-
-  const userData = {
-    ...form,
-    location: {
-      lat,
-      lng,
-    },
-  }
-
-  await fetch(url, {
+  const res = await fetch(url, {
     method,
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(userData),
+    body: JSON.stringify(payload),
   })
+
+  if (!res.ok) {
+    const error = await res.json()
+    console.error('❌ Error:', error)
+    return
+  }
 
   setForm(defaultUser)
   setEditingId(null)
   fetchUsers()
 }
+
 
 
   const handleEdit = (user: User) => {
