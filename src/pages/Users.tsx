@@ -67,42 +67,36 @@ export default function Users() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("📤 Enviant al backend:", form)
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
 
-    const userDataToSend = {
-      name: `${form.first} ${form.last}`,
-      email: form.email,
-      phone: form.phone,
-      hobby: form.hobby,
-      location: form.location,
+  console.log("📤 Enviant al backend:", form)
+
+  const method = editingId ? 'PUT' : 'POST'
+  const url = editingId ? `${API}/${editingId}` : API
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form), // 🟢 ARA enviem tot correctament
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      console.error('❌ Error:', data)
+      return
     }
 
-    const method = editingId ? 'PUT' : 'POST'
-    const url = editingId ? `${API}/${editingId}` : API
-
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userDataToSend),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        console.error('❌ Error:', data)
-        return
-      }
-
-      setForm(defaultUser)
-      setEditingId(null)
-      fetchUsers()
-    } catch (error) {
-      console.error('❌ Error enviant usuari:', error)
-    }
+    setForm(defaultUser)
+    setEditingId(null)
+    fetchUsers()
+  } catch (error) {
+    console.error('❌ Error enviant usuari:', error)
   }
+}
+
 
   const handleEdit = (user: User) => {
     setForm(user)
