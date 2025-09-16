@@ -41,34 +41,47 @@ export default function Users() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const method = editingId ? 'PUT' : 'POST'
-    const url = editingId ? `${API}/${editingId}` : API
+  e.preventDefault()
+  const method = editingId ? 'PUT' : 'POST'
+  const url = editingId ? `${API}/${editingId}` : API
 
-    // Convertir la ubicació en format { lat, lng } si és possible
-    const locationParts = form.location.split(',').map((val) => parseFloat(val.trim()))
-    const hasValidCoords = locationParts.length === 2 && locationParts.every((n) => !isNaN(n))
-
-    const userData = {
-      ...form,
-      ...(hasValidCoords && {
-        location: {
-          lat: locationParts[0],
-          lng: locationParts[1],
-        },
-      }),
+  // Obtenir coordenades des de Nominatim (OpenStreetMap)
+  let lat = null
+  let lng = null
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(form.location)}`)
+    const data = await response.json()
+    if (data && data.length > 0) {
+      lat = parseFloat(data[0].lat)
+      lng = parseFloat(data[0].lon)
+    } else {
+      alert('Ubicació no trobada')
+      return
     }
-
-    await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData),
-    })
-
-    setForm(defaultUser)
-    setEditingId(null)
-    fetchUsers()
+  } catch (err) {
+    console.error('Error amb geocodificació:', err)
+    return
   }
+
+  const userData = {
+    ...form,
+    location: {
+      lat,
+      lng,
+    },
+  }
+
+  await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData),
+  })
+
+  setForm(defaultUser)
+  setEditingId(null)
+  fetchUsers()
+}
+
 
   const handleEdit = (user: User) => {
     setForm(user)
@@ -96,9 +109,9 @@ export default function Users() {
             onChange={handleChange}
             placeholder={
               field === 'location'
-                ? 'Ubicació (ex: 41.3851,2.1734)'
+                ? 'Ciutat o adreça (ex: Barcelona, Girona...)'
                 : field.charAt(0).toUpperCase() + field.slice(1)
-            }
+}
             className="p-2 border rounded"
             required
           />
