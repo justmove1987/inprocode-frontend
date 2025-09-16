@@ -27,6 +27,7 @@ export default function Users() {
   const API = 'http://localhost:3000/api/users'
 
   useEffect(() => {
+    console.log("📦 Enviant dades:", form)
     fetchUsers()
   }, [])
 
