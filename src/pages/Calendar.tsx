@@ -1,9 +1,9 @@
 // src/pages/Calendar.tsx
+import { useEffect, useState } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import { useState } from 'react'
 import type { EventClickArg, DateSelectArg } from '@fullcalendar/core'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -31,6 +31,21 @@ export default function Calendar() {
   })
   const [selectInfo, setSelectInfo] = useState<DateSelectArg | null>(null)
 
+  // 🔁 Carregar esdeveniments des del backend
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/events`)
+        const data = await res.json()
+        setEvents(data)
+      } catch (error) {
+        console.error('Error carregant esdeveniments:', error)
+      }
+    }
+
+    fetchEvents()
+  }, [])
+
   const handleDateSelect = (info: DateSelectArg) => {
     setSelectInfo(info)
     setModalOpen(true)
@@ -39,10 +54,11 @@ export default function Calendar() {
   const handleEventClick = (clickInfo: EventClickArg) => {
     if (confirm(`Vols eliminar l'esdeveniment "${clickInfo.event.title}"?`)) {
       setEvents((prev) => prev.filter((event) => event.id !== clickInfo.event.id))
+      // TODO: Cridar DELETE al backend si vols persistència real
     }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectInfo && newEvent.title) {
       const date = selectInfo.startStr.split('T')[0]
       const start = `${date}T${newEvent.startTime}`
@@ -55,10 +71,21 @@ export default function Calendar() {
         end,
         backgroundColor: newEvent.color,
       }
-      setEvents((prev) => [...prev, newEvt])
-      setNewEvent({ title: '', color: COLORS[0], startTime: '10:00', endTime: '11:00' })
-      setModalOpen(false)
-      selectInfo.view.calendar.unselect()
+
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/events`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newEvt),
+        })
+
+        setEvents((prev) => [...prev, newEvt])
+        setNewEvent({ title: '', color: COLORS[0], startTime: '10:00', endTime: '11:00' })
+        setModalOpen(false)
+        selectInfo.view.calendar.unselect()
+      } catch (error) {
+        console.error('Error enviant esdeveniment al backend:', error)
+      }
     }
   }
 
@@ -148,4 +175,3 @@ export default function Calendar() {
     </div>
   )
 }
-
