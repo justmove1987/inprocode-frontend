@@ -33,20 +33,34 @@ const categoryColors: Record<string, string> = {
   parking: 'bg-green-500',
   hotel: 'bg-yellow-500',
   ruta: 'bg-purple-500',
+  usuari: 'bg-black',
 }
 
-const getCustomIcon = (category: string) =>
-  L.divIcon({
+const categoryIcons: Record<string, string> = {
+  restaurant: 'png',
+  museu: 'png',
+  parking: 'png',
+  hotel: 'png',
+  ruta: 'png',
+  usuari: 'svg', // ✅ La icona per usuaris
+}
+
+
+const getCustomIcon = (category: string) => {
+  const ext = categoryIcons[category] || 'png' // per defecte, png
+
+  return L.divIcon({
     className: '',
     html: `
       <div class="w-10 h-10 ${categoryColors[category] || 'bg-gray-400'} rounded-full flex items-center justify-center border-2 border-white shadow-md">
-        <img src="/icons/${category}.png" class="w-5 h-5 object-contain" />
+        <img src="/icons/${category}.${ext}" class="w-5 h-5 object-contain" />
       </div>
     `,
     iconSize: [40, 40],
     iconAnchor: [20, 40],
     popupAnchor: [0, -40],
   })
+}
 
 const getIconForLocation = (loc: Location, index: number) => {
   if (loc.userId) {
