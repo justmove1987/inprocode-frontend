@@ -47,7 +47,7 @@ const categoryIcons: Record<string, string> = {
 
 
 const getCustomIcon = (category: string) => {
-  const ext = categoryIcons[category] || 'png' // per defecte, png
+  const ext = categoryIcons[category] || 'svg' // per defecte, png
 
   return L.divIcon({
     className: '',
@@ -68,7 +68,8 @@ const getIconForLocation = (loc: Location, index: number) => {
     return L.divIcon({
       className: '',
       html: `
-        <div class="w-8 h-8 bg-black rounded-full border-2 border-white shadow-md"></div>
+        <div class="w-8 h-8 bg-black rounded-full border-2 border-white shadow-md">
+        <img class="max-h-16 w-full" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22white%22%20viewBox%3D%220%200%2024%2024%22%3E%0A%20%20%3Cpath%20d%3D%22M12%2012c2.7%200%204.5-1.8%204.5-4.5S14.7%203%2012%203%207.5%204.8%207.5%207.5%209.3%2012%2012%2012zm0%202c-3%200-9%201.5-9%204.5V21h18v-2.5c0-3-6-4.5-9-4.5z%22%3E%3C%2Fpath%3E%0A%3C%2Fsvg%3E%0A"></div>
       `,
       iconSize: [32, 32],
       iconAnchor: [16, 32],
