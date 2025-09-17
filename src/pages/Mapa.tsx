@@ -45,10 +45,10 @@ const categoryIcons: Record<string, string> = {
   usuari: 'svg', // ✅ La icona per usuaris
 }
 
+const jitter = () => (Math.random() - 0.5) * 0.0005
 
 const getCustomIcon = (category: string) => {
-  const ext = categoryIcons[category] || 'svg' // per defecte, png
-
+  const ext = categoryIcons[category] || 'svg'
   return L.divIcon({
     className: '',
     html: `
@@ -64,12 +64,16 @@ const getCustomIcon = (category: string) => {
 
 const getIconForLocation = (loc: Location, index: number) => {
   if (loc.userId) {
-    // 🔲 Icona negra per a usuaris
+    const latOffset = jitter()
+    const lngOffset = jitter()
+    loc.lat += latOffset
+    loc.lng += lngOffset
     return L.divIcon({
       className: '',
       html: `
-        <div class="w-8 h-8 bg-black rounded-full border-2 border-white shadow-md">
-        <img class="max-h-16 w-full" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22white%22%20viewBox%3D%220%200%2024%2024%22%3E%0A%20%20%3Cpath%20d%3D%22M12%2012c2.7%200%204.5-1.8%204.5-4.5S14.7%203%2012%203%207.5%204.8%207.5%207.5%209.3%2012%2012%2012zm0%202c-3%200-9%201.5-9%204.5V21h18v-2.5c0-3-6-4.5-9-4.5z%22%3E%3C%2Fpath%3E%0A%3C%2Fsvg%3E%0A"></div>
+        <div class="w-8 h-8 bg-black rounded-full border-2 border-white shadow-md flex items-center justify-center">
+          <img class="w-4 h-4" src="/icons/usuari.svg" />
+        </div>
       `,
       iconSize: [32, 32],
       iconAnchor: [16, 32],
@@ -94,13 +98,12 @@ const getIconForLocation = (loc: Location, index: number) => {
   return getCustomIcon(loc.category)
 }
 
-
 export default function Mapa() {
   const [locations, setLocations] = useState<Location[]>([])
   const [form, setForm] = useState<Location>({ name: '', lat: 0, lng: 0, category: '' })
   const [search, setSearch] = useState('')
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
- const [filters, setFilters] = useState<string[]>(['restaurant', 'museu', 'parking', 'hotel', 'ruta', 'usuari'])
+  const [filters, setFilters] = useState<string[]>(['restaurant', 'museu', 'parking', 'hotel', 'ruta', 'usuari'])
   const [editingId, setEditingId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -245,7 +248,7 @@ export default function Mapa() {
 
       {/* ✅ Filtres */}
       <div className="flex gap-4 justify-center mt-4 mb-2 bg-white p-2 shadow flex-wrap">
-        {['restaurant', 'museu', 'parking', 'hotel', 'ruta'].map(cat => (
+        {['restaurant', 'museu', 'parking', 'hotel', 'ruta', 'usuari'].map(cat => (
           <label key={cat} className="flex items-center gap-1">
             <input type="checkbox" checked={filters.includes(cat)} onChange={() => toggleCategory(cat)} />
             <span className="capitalize">{cat}</span>
