@@ -18,20 +18,29 @@ type Event = {
   start: string
   end: string
   backgroundColor?: string
+  userId?: string
+  user?: { first: string; last: string } // si el backend fa populate
+}
+
+type User = {
+  _id: string
+  first: string
+  last: string
 }
 
 export default function Calendar() {
   const [events, setEvents] = useState<Event[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [modalOpen, setModalOpen] = useState(false)
   const [newEvent, setNewEvent] = useState({
     title: '',
     color: COLORS[0],
     startTime: '10:00',
-    endTime: '11:00'
+    endTime: '11:00',
+    userId: ''
   })
   const [selectInfo, setSelectInfo] = useState<DateSelectArg | null>(null)
 
-  // 🔁 Carregar esdeveniments des del backend
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -43,7 +52,18 @@ export default function Calendar() {
       }
     }
 
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users`)
+        const data = await res.json()
+        setUsers(data)
+      } catch (error) {
+        console.error('Error carregant usuaris:', error)
+      }
+    }
+
     fetchEvents()
+    fetchUsers()
   }, [])
 
   const handleDateSelect = (info: DateSelectArg) => {
@@ -70,6 +90,7 @@ export default function Calendar() {
         start,
         end,
         backgroundColor: newEvent.color,
+        userId: newEvent.userId || undefined,
       }
 
       try {
@@ -80,7 +101,7 @@ export default function Calendar() {
         })
 
         setEvents((prev) => [...prev, newEvt])
-        setNewEvent({ title: '', color: COLORS[0], startTime: '10:00', endTime: '11:00' })
+        setNewEvent({ title: '', color: COLORS[0], startTime: '10:00', endTime: '11:00', userId: '' })
         setModalOpen(false)
         selectInfo.view.calendar.unselect()
       } catch (error) {
@@ -102,7 +123,12 @@ export default function Calendar() {
         }}
         selectable={true}
         selectMirror={true}
-        events={events}
+        events={events.map(e => ({
+          ...e,
+          title: users.length && e.userId
+            ? `${e.title} (${users.find(u => u._id === e.userId)?.first || ''})`
+            : e.title
+        }))}
         select={handleDateSelect}
         eventClick={handleEventClick}
         editable={true}
@@ -120,6 +146,7 @@ export default function Calendar() {
               onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
               className="border p-2 rounded w-full mb-4"
             />
+
             <div className="flex gap-4 mb-4">
               <div className="flex flex-col w-1/2">
                 <label className="mb-1 text-sm">Hora inici:</label>
@@ -140,6 +167,23 @@ export default function Calendar() {
                 />
               </div>
             </div>
+
+            <div className="mb-4">
+              <label className="block mb-2 text-sm">Assigna un usuari:</label>
+              <select
+                value={newEvent.userId}
+                onChange={(e) => setNewEvent({ ...newEvent, userId: e.target.value })}
+                className="border p-2 rounded w-full"
+              >
+                <option value="">-- Cap usuari --</option>
+                {users.map(user => (
+                  <option key={user._id} value={user._id}>
+                    {user.first} {user.last}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="mb-4">
               <p className="mb-2">Color:</p>
               <div className="flex flex-wrap gap-2">
@@ -155,6 +199,7 @@ export default function Calendar() {
                 ))}
               </div>
             </div>
+
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setModalOpen(false)}
